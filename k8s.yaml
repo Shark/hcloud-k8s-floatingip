@@ -1,0 +1,47 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hcloud-k8s-floatingip
+  namespace: default
+stringData:
+  hcloud_token:
+  floating_ip_id: ''
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hcloud-k8s-floatingip
+  labels:
+    app: hcloud-k8s-floatingip
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hcloud-k8s-floatingip
+  template:
+    metadata:
+      labels:
+        app: hcloud-k8s-floatingip
+    spec:
+      containers:
+      - name: hcloud-k8s-floatingip
+        image: sh4rk/hcloud-k8s-floatingip
+        env:
+          - name: HCLOUD_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: hcloud-k8s-floatingip
+                key: hcloud_token
+
+          - name: FLOATING_IP_ID
+            valueFrom:
+              secretKeyRef:
+                name: hcloud-k8s-floatingip
+                key: floating_ip_id
+
+          - name: THIS_SERVER_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
